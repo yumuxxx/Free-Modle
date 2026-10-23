@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Free-Modle entry",
+  "description": "一条免费 LLM / API 调研记录",
+  "type": "object",
+  "required": ["id", "name", "category", "provider", "status", "first_seen", "last_seen", "source_url"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "查重主键，小写规范键，通常为 provider + model_family，如 openrouter/llama-3.3-70b"
+    },
+    "name": {
+      "type": "string",
+      "description": "展示名，如 OpenRouter 免费层"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["aggregator", "vendor-api", "open-source"],
+      "description": "aggregator=聚合平台, vendor-api=厂商官方免费 API, open-source=开源代理/池化项目"
+    },
+    "provider": {
+      "type": "string",
+      "description": "提供方，如 OpenRouter / Google / Qwen"
+    },
+    "model_family": {
+      "type": "string",
+      "description": "覆盖的模型系列，可空"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "expired", "unverified", "superseded"],
+      "description": "当前可用性状态"
+    },
+    "free_tier": {
+      "type": "string",
+      "description": "免费额度描述，如 '1000 req/day' 或 '免费调用 :free 模型'，可空"
+    },
+    "quota_checked_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "额度信息的核对时间（ISO 8601，Asia/Shanghai）"
+    },
+    "endpoint": {
+      "type": ["string", "null"],
+      "description": "API 端点，用于复检探测"
+    },
+    "signup_url": {
+      "type": ["string", "null"],
+      "description": "注册/开通地址，用于复检探测"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "信息来源 URL（官方文档、公告、GitHub 仓库等）"
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "首次记录时间"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最近一次确认仍存在的时间"
+    },
+    "verify_fail_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "连续复检失败次数，达 2 次置 expired"
+    },
+    "expired_reason": {
+      "type": ["string", "null"],
+      "description": "失效原因，仅在 status=expired 时填写"
+    },
+    "notes": {
+      "type": "string",
+      "description": "补充说明：限制条件、风控、注意事项等，可空"
+    }
+  },
+  "additionalProperties": false
+}
