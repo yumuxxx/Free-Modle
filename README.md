@@ -86,11 +86,11 @@ Free-Modle/
 - **钉钉**：`accessToken` → `POST /v1.0/robot/oToMessages/batchSend`
 
 凭证来源：
-- 飞书 app secret —— `/root/.dsh/.credentials.yaml` 的 `refs.DSH_FEISHU_APP_SECRET_*`
-- 钉钉 app secret —— 同文件的 `refs.DSH_DINGTALK_BOT_SECRET_*`
+- 飞书 app secret —— 本地凭证文件中的 `refs.DSH_FEISHU_APP_SECRET_*`
+- 钉钉 app secret —— 同文件中的 `refs.DSH_DINGTALK_BOT_SECRET_*`
 - appId / clientId / 接收人 open_id —— 对应插件 `config.json`
 
-**凭证不进仓库**（`.gitignore` 已排除 `.secrets/`）。
+**凭证不进仓库**（`.gitignore` 已排除 `.secrets/`）。凭证文件路径属隐私，不在文档中记录，统一以 `<WEBHOOK-FILE>` 指代。
 
 ---
 
