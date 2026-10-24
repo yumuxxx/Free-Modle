@@ -42,7 +42,8 @@
 
 | 方向 | 说明 |
 |------|------|
-| **DSH 插件** | DeepSeek Harness 生态的插件、扩展、集成 |
+| **AI agent（优先）** | agent 框架与编排、MCP 生态、工具调用、agent 记忆、多 agent 协作、agent 评测（2026-10-24 用户定为优先方向） |
+| **DSH 插件（优先）** | DeepSeek Harness 生态的插件、扩展、集成、MCP server（2026-10-24 用户定为优先方向） |
 | **反代 / 网关** | 统一接口转发多家 AI 服务（new-api、one-api、one-hub 等） |
 | **本地部署** | Ollama、vLLM、llama.cpp、LM Studio 及周边 |
 | **前端** | AI 对话客户端、Web UI、浏览器插件 |
