@@ -38,7 +38,7 @@
 
 | 任务 | 时间 | 产出 |
 |------|------|------|
-| 免费模型与赠送额度调研 | 每天 18:00 | `data/snapshots/YYYY-MM-DD-evening.md` + `data/index.jsonl` 更新。方向（2026-10-24 调整）：各供应商免费模型 + 赠送 token/积分活动（含 WordBuddy、ZCode、Qoder 等 IDE/工具类供应商）+ 聚合平台/厂商官方免费 API + 开源免费代理项目 |
+| 免费模型与赠送额度调研 | 每天 18:00 | `data/snapshots/YYYY-MM-DD-evening.md` + `data/index.jsonl` 更新。方向（2026-10-24 定）：**只检索**各供应商免费模型 + 赠送 token/积分活动（含 WordBuddy、ZCode、Qoder 等 IDE/工具类供应商，动态发现同类新供应商）；原聚合平台/厂商官方/开源代理三个方向自 2026-10-25 起停止新增调研，历史条目仅做日常复检 |
 | AI 学习资料收集 | 每天 18:00 | `ai-learning/weekly/YYYY-MM-DD-weekly.md` + 新资料 |
 | GitHub AI 方案排行 | 每天 18:00 | `github-trending/daily/YYYY-MM-DD.md`（两份榜单） |
 
