@@ -9,7 +9,9 @@
     python3 scripts/distill.py data/snapshots/2026-10-23-evening.md --json   # 供推送脚本消费
 
 输入快照需包含四节（新增 / 失效清单 / 额度变化 / 复检结果），
-缺节时按「无」处理。输出为纯文本，控制在 ~800 字内。
+缺节时按「无」处理；若一节都没匹配到，则向 stderr 报诊断并以非 0 退出
+（该文件不是任务 1 的四段式快照，请手写摘要推送）。
+输出为纯文本，控制在 ~800 字内。
 """
 import argparse
 import json
@@ -37,6 +39,22 @@ def parse_snapshot(path):
         if current is not None:
             out[current].append(line.rstrip())
     return out
+
+
+def extract_title(source):
+    """标题优先取源文件自身的 H1（首个 '# ' 行），取不到则退回文件名。
+
+    不附加任何字面前缀——不同任务的报告共用本脚本，硬编码前缀会张冠李戴。
+    """
+    try:
+        text = open(source, encoding="utf-8").read()
+    except OSError:
+        text = ""
+    for line in text.splitlines():
+        m = re.match(r"^#\s+(.+?)\s*$", line)
+        if m:
+            return m.group(1).strip()
+    return os.path.basename(source).replace(".md", "")
 
 
 def is_table_noise(s):
@@ -207,12 +225,12 @@ def build_text(sections, source):
         limit = SECTION_LIMIT.get(name, 5)
         body = "\n".join(f"• {i}" if i != "无" else "• 无" for i in items[:limit])
         parts.append(f"【{name}】\n{body}")
-    head = f"Free Model 调研 · {os.path.basename(source).replace('.md', '')}"
+    head = extract_title(source)
     return truncate(head + "\n\n" + "\n\n".join(parts))
 
 
 def build_json(sections, source):
-    data = {"title": f"Free Model 调研 · {os.path.basename(source).replace('.md', '')}",
+    data = {"title": extract_title(source),
             "source": source, "sections": {}}
     for name in SECTIONS:
         items = clean(sections.get(name, []))
@@ -233,6 +251,15 @@ def main():
         return 1
 
     sections = parse_snapshot(args.snapshot)
+    # 护栏：只有「预期小节」（SECTIONS 里的节名本身作为标题）真的命中时才继续。
+    # parse_snapshot 的键是标题全文，'## 本期新增（…）' 这种标题会存入字典却
+    # 不会被 build_text 读取，最终只剩一行标题加四个「无」——静默残骸比报错更糟。
+    hits = [name for name in SECTIONS if name in sections]
+    if not hits:
+        print(f"error: {args.snapshot} 未匹配到任何预期小节", file=sys.stderr)
+        print(f"期望的节名（SECTIONS）：{' / '.join(SECTIONS)}", file=sys.stderr)
+        print("本脚本只适用于任务 1 快照；任务 2/3 请手写摘要推送。", file=sys.stderr)
+        return 1
     if args.json:
         print(json.dumps(build_json(sections, args.snapshot), ensure_ascii=False, indent=2))
     else:
