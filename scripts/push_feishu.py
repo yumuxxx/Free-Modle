@@ -133,6 +133,11 @@ def main() -> int:
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
         import distill
         sections = distill.parse_snapshot(args.file)
+        # 护栏：非四段式报告（任务 2/3）会静默产出「一行标题 + 四个无」残骸，
+        # 必须在这里挡住，否则推送出去的就是垃圾内容。
+        if not distill.matched_sections(sections):
+            sys.stderr.write(distill.section_mismatch_hint(args.file))
+            sys.exit("[push_feishu] 文件不是任务 1 四段式快照，未发送；请改用 --text 手写摘要")
         text = distill.build_text(sections, args.file)
 
     if not text or not text.strip():

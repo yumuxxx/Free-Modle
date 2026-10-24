@@ -24,7 +24,12 @@ SECTIONS = ("新增", "失效清单", "额度变化", "复检结果")
 
 
 def parse_snapshot(path):
-    """把快照 markdown 拆成 {节名: [行...]}。"""
+    """把快照 markdown 拆成 {节名: [行...]}。
+
+    注意：键是**标题全文**，不是规范化节名。'## 一、本期新增（1 篇）' 会存入
+    键 '一、本期新增（1 篇）'，因此字典非空不代表 build_text 能读到内容。
+    判断是否可提纯请用 matched_sections()。
+    """
     text = open(path, encoding="utf-8").read()
     out = {}
     current = None
@@ -39,6 +44,24 @@ def parse_snapshot(path):
         if current is not None:
             out[current].append(line.rstrip())
     return out
+
+
+def matched_sections(sections):
+    """返回 parse_snapshot 结果中真正命中的预期节名（SECTIONS 中的规范键）。
+
+    只有这里非空，build_text 才可能产出有意义的内容；否则会静默输出
+    「一行标题 + 四个无」的残骸。调用方（含 push_* 脚本）应在提纯前检查。
+    """
+    return [name for name in SECTIONS if name in sections]
+
+
+def section_mismatch_hint(source):
+    """零命中时给调用方的诊断文案（多行，已含换行）。"""
+    return (
+        f"error: {source} 未匹配到任何预期小节\n"
+        f"期望的节名（SECTIONS）：{' / '.join(SECTIONS)}\n"
+        "本脚本只适用于任务 1 快照；任务 2/3 请手写摘要推送。\n"
+    )
 
 
 def extract_title(source):
@@ -254,11 +277,8 @@ def main():
     # 护栏：只有「预期小节」（SECTIONS 里的节名本身作为标题）真的命中时才继续。
     # parse_snapshot 的键是标题全文，'## 本期新增（…）' 这种标题会存入字典却
     # 不会被 build_text 读取，最终只剩一行标题加四个「无」——静默残骸比报错更糟。
-    hits = [name for name in SECTIONS if name in sections]
-    if not hits:
-        print(f"error: {args.snapshot} 未匹配到任何预期小节", file=sys.stderr)
-        print(f"期望的节名（SECTIONS）：{' / '.join(SECTIONS)}", file=sys.stderr)
-        print("本脚本只适用于任务 1 快照；任务 2/3 请手写摘要推送。", file=sys.stderr)
+    if not matched_sections(sections):
+        sys.stderr.write(section_mismatch_hint(args.snapshot))
         return 1
     if args.json:
         print(json.dumps(build_json(sections, args.snapshot), ensure_ascii=False, indent=2))
