@@ -3,11 +3,11 @@
 
 凭证来源（按优先级）：
   1. 环境变量 FEISHU_APP_SECRET
-  2. /root/.dsh/.credentials.yaml 中 refs.DSH_FEISHU_APP_SECRET_<hex>
+  2. DSH 凭证库中 refs.DSH_FEISHU_APP_SECRET_<hex>
      —— 即 dsh-feishu 插件激活时写入的 app secret，与已运行的 "Free Model" 机器人同源。
 
-appId / ownerOpenId 从 /root/.dsh/integrations/dsh-feishu/config.json 读取，
-避免硬编码。文件不存在时回退到内置默认值。
+appId / ownerOpenId 从 DSH 插件配置（dsh-feishu 的 config.json）的 bot 对象内层读取，
+不设硬编码兜底；配置不可读或字段缺失时直接报错退出。
 
 用法：
   python3 scripts/push_feishu.py --text "消息内容"
@@ -26,13 +26,11 @@ import sys
 import urllib.error
 import urllib.request
 
-CRED_FILE = "/root/.dsh/.credentials.yaml"
-PLUGIN_CFG = "/root/.dsh/integrations/dsh-feishu/config.json"
+DSH_HOME = os.environ.get("DSH_HOME") or os.path.expanduser("~/.dsh")
+CRED_FILE = os.path.join(DSH_HOME, ".credentials.yaml")
+PLUGIN_CFG = os.path.join(DSH_HOME, "integrations", "dsh-feishu", "config.json")
 TOKEN_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
 SEND_URL = "https://open.feishu.cn/open-apis/im/v1/messages"
-
-DEFAULT_APP_ID = "cli_aa50f6fbeeb8dc0b"
-DEFAULT_OWNER = "ou_7d06e9ec3f9361f77cd9d774b616d140"
 TIMEOUT = 20
 
 
@@ -54,20 +52,19 @@ def load_secret() -> str:
 
 
 def load_cfg() -> tuple[str, str]:
-    """读取 (app_id, owner_open_id)。插件配置优先，回退默认值。"""
-    app_id, owner = DEFAULT_APP_ID, DEFAULT_OWNER
+    """读取 (app_id, owner_open_id)。全部来自插件配置，无硬编码兜底。"""
     try:
         cfg = json.load(open(PLUGIN_CFG, encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return app_id, owner
+    except (OSError, json.JSONDecodeError) as e:
+        sys.exit(f"[push_feishu] 无法读取插件配置 {PLUGIN_CFG}: {e}")
     for bot in cfg.get("bots", []):
         if bot.get("activated") == 2:
-            app_id = bot.get("appId") or app_id
-            break
-    ids = cfg.get("ownerOpenIds") or []
-    if ids:
-        owner = ids[0]
-    return app_id, owner
+            app_id = bot.get("appId")
+            ids = bot.get("ownerOpenIds") or []   # 从 bot 内层取，不是顶层
+            if not app_id or not ids:
+                sys.exit("[push_feishu] 插件配置缺少 appId 或 ownerOpenIds，无法推送")
+            return app_id, ids[0]
+    sys.exit("[push_feishu] 插件配置中无 activated 机器人，无法推送")
 
 
 # ---------- HTTP ----------

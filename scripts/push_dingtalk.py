@@ -3,10 +3,10 @@
 
 凭证来源（按优先级）：
   1. 环境变量 DINGTALK_APP_KEY / DINGTALK_APP_SECRET / DINGTALK_ROBOT_CODE
-  2. /root/.dsh/.credentials.yaml 的 refs.DSH_DINGTALK_BOT_SECRET_<hex>
-     + /root/.dsh/integrations/dsh-dingtalk/config.json 的 clientId
+  2. DSH 凭证库的 refs.DSH_DINGTALK_BOT_SECRET_<hex>
+      + DSH 插件配置（dsh-dingtalk 的 config.json）的 clientId
 
-接收人默认取 /root/.dsh/integrations/dsh-dingtalk/bots/*/state.json 中
+接收人默认取 DSH 插件配置中 dsh-dingtalk 的 bots/*/state.json 中
 已知的 p2p 会话用户 id（即与机器人私聊过的人），也可用 --user 覆盖。
 
 用法：
@@ -28,8 +28,9 @@ import sys
 import urllib.error
 import urllib.request
 
-CRED_FILE = "/root/.dsh/.credentials.yaml"
-PLUGIN_DIR = "/root/.dsh/integrations/dsh-dingtalk"
+DSH_HOME = os.environ.get("DSH_HOME") or os.path.expanduser("~/.dsh")
+CRED_FILE = os.path.join(DSH_HOME, ".credentials.yaml")
+PLUGIN_DIR = os.path.join(DSH_HOME, "integrations", "dsh-dingtalk")
 TOKEN_URL = "https://api.dingtalk.com/v1.0/oauth2/accessToken"
 SEND_URL = "https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend"
 TIMEOUT = 20
