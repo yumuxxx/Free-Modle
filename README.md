@@ -4,7 +4,7 @@
 
 - 仓库地址：<https://github.com/yumuxxx/Free-Modle>
 - 维护方式：全自动（DSH 定时任务），无需人工干预
-- 推送通道：钉钉（`scripts/push_dingtalk.py`）+ 飞书（`scripts/push_feishu.py`）
+- 推送通道：统一钉钉（`scripts/push_dingtalk.py`）。2026-10-24 起不再使用飞书推送；`push_feishu.py` 保留仅作备用，定时任务不调用
 
 > [!warning] 写入规范（定时任务与人工维护都必须遵守）
 > 1. **新建文件与目录名一律英文 kebab-case**，中文只做正文说明。
@@ -72,7 +72,7 @@ Free-Modle/
     dedupe.py              # 查重：比对 index.jsonl 与新条目
     verify.py              # 复检：重新验证条目可用性，标记 expired
     distill.py             # 提纯：把快照压缩成 ≤900 字符摘要
-    push_feishu.py         # 飞书推送（开放平台 API）
+    push_feishu.py         # 飞书推送（已停用，仅留档）
     push_dingtalk.py       # 钉钉推送（开放平台 API）
 ```
 
